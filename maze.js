@@ -176,6 +176,7 @@ class Mario {
 
     this.grid[this.start.x][this.start.y] = true;
     this.grid[this.end.x][this.end.y] = true;
+    this.grid[this.end.x-1][this.end.y] = true;
   }
 
   moveUp() {
