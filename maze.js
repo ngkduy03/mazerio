@@ -27,6 +27,7 @@ class Mario {
 
   play() {
     this.rq = requestAnimationFrame(this.play.bind(this));
+    this.bgAu.volume = 0.1;
     this.bgAu.play();
 
     // bg
