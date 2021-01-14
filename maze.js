@@ -15,6 +15,8 @@ class Mario {
     this.coinImg.src = "coin.png";
     this.mushroomImg = new Image();
     this.mushroomImg.src = "mushroom.png";
+    this.flowerImg = new Image();
+    this.flowerImg.src = "flower.png";
     this.bgImg = new Image();
     this.bgImg.src = "bg.png";
 
@@ -45,7 +47,7 @@ class Mario {
         this.loseAu.volume = 0.1;
         this.bgAu.pause();
         this.loseAu.play();
-        alert("Bowser: Hah! Loser! Your princess now be mine!");
+        alert("Bowser: Hah! Time out! Your princess now be mine!");
         clearInterval(this.interval);
         cancelAnimationFrame(this.rq);
       } else if(this.win) {
@@ -59,9 +61,9 @@ class Mario {
     this.time = 30;
     // player
     this.win = false;
-    this.start = { x: 0, y: ~~(Math.random() * (this.size - 1) + 1) };
+    this.start = { x: 0, y: ~~(Math.random() * (this.size - 2) + 1) };
     this.player = this.start;
-    this.end = { x: 29, y: ~~(Math.random() * (this.size - 1) + 1) };
+    this.end = { x: 29, y: ~~(Math.random() * (this.size - 2) + 1) };
     //canvas stuff
     this.canvas = document.createElement("canvas");
     this.canvas.id = "myCanvas";
@@ -255,7 +257,7 @@ class Mario {
       this.player.y < this.size &&
       this.grid[this.player.x][this.player.y - 1] == true
     ) {
-      this.drawRect(this.player.x, this.player.y, "white");
+      this.drawRect(this.player.x, this.player.y);
       this.player.y--;
     }
   }
@@ -265,7 +267,7 @@ class Mario {
       this.player.y < this.size &&
       this.grid[this.player.x][this.player.y + 1] == true
     ) {
-      this.drawRect(this.player.x, this.player.y, "white");
+      this.drawRect(this.player.x, this.player.y);
       this.player.y++;
     }
   }
@@ -275,7 +277,7 @@ class Mario {
       this.player.y < this.size &&
       this.grid[this.player.x - 1][this.player.y] == true
     ) {
-      this.drawRect(this.player.x, this.player.y, "white");
+      this.drawRect(this.player.x, this.player.y);
       this.player.x--;
     }
   }
@@ -285,7 +287,7 @@ class Mario {
       this.player.y < this.size &&
       this.grid[this.player.x + 1][this.player.y] == true
     ) {
-      this.drawRect(this.player.x, this.player.y, "white");
+      this.drawRect(this.player.x, this.player.y);
       this.player.x++;
     }
   }
@@ -469,7 +471,7 @@ class Mario {
     this.player.x = this.start.x;
     this.player.y = this.start.y;
     for (let i = 1; i < hint.length; i++) {
-      mario.drawRect(hint[i].x, hint[i].y, "red");
+      this.ctx.drawImage(this.flowerImg, hint[i].x*this.squareSize, hint[i].y*this.squareSize,this.squareSize,this.squareSize);
     }
   }
 }
