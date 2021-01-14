@@ -37,10 +37,10 @@ class Mario {
   }
 
   timing() {
-    document.getElementById("time").innerHTML = `You have ${mario.time} second left`;
+    document.getElementById("timer").innerHTML = `You have ${mario.time} second left`;
     this.interval = setInterval(() => {
       this.time--;
-      document.getElementById("time").innerHTML = `You have ${this.time} second left!`;
+      document.getElementById("timer").innerHTML = `You have ${this.time} second left!`;
       if(this.time == 0) {
         this.loseAu.volume = 0.1;
         this.bgAu.pause();
