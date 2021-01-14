@@ -53,9 +53,6 @@ class Mario {
         this.ctx.drawImage(this.loseImg,0,0,900,900);
         clearInterval(this.interval);
         cancelAnimationFrame(this.rq);
-      } else if(this.win) {
-        clearInterval(this.interval);
-        cancelAnimationFrame(this.rq);
       }
     },1000);
   }
@@ -300,7 +297,10 @@ class Mario {
       this.winAu.volume = 0.1;
       this.winAu.play();
       cancelAnimationFrame(this.rq);
+      clearInterval(this.interval);
       this.ctx.drawImage(this.winImg, 0,0,900,900);
+      document.getElementById("noti").innerHTML = "Congratulation!";
+      document.getElementById("timer").innerHTML = `You have successfully rescued the princess in ${this.time} seconds`;
     }
   }
 
