@@ -19,6 +19,10 @@ class Mario {
     this.flowerImg.src = "flower.png";
     this.bgImg = new Image();
     this.bgImg.src = "bg.png";
+    this.winImg = new Image();
+    this.winImg.src = "winingImg.jpg";
+    this.loseImg = new Image();
+    this.loseImg.src = "loseImg.jpg";
 
     //audio
     this.bgAu = new Audio("theme.mp3");
@@ -34,7 +38,6 @@ class Mario {
     this.ctx = null;
     this.div = document.getElementById("canvasDiv");
     this.time = null;
-    this.win = null;
     this.interval = null;
   }
 
@@ -47,7 +50,7 @@ class Mario {
         this.loseAu.volume = 0.1;
         this.bgAu.pause();
         this.loseAu.play();
-        alert("Bowser: Hah! Time out! Your princess now be mine!");
+        this.ctx.drawImage(this.loseImg,0,0,900,900);
         clearInterval(this.interval);
         cancelAnimationFrame(this.rq);
       } else if(this.win) {
@@ -60,7 +63,6 @@ class Mario {
   init() {
     this.time = 30;
     // player
-    this.win = false;
     this.start = { x: 0, y: ~~(Math.random() * (this.size - 2) + 1) };
     this.player = this.start;
     this.end = { x: 29, y: ~~(Math.random() * (this.size - 2) + 1) };
@@ -74,19 +76,19 @@ class Mario {
     this.bgAu.volume = 0.1;
     this.bgAu.play();
   }
+  
   drawRect(i, j, style = "black") {
-    this.ctx.fillStyle = style;
-    this.ctx.fillRect(
-      i * this.size,
-      j * this.size,
-      this.squareSize,
-      this.squareSize
-    );
+      this.ctx.fillStyle = style;
+      this.ctx.fillRect(
+        i * this.size,
+        j * this.size,
+        this.squareSize,
+        this.squareSize
+      );
   }
 
   play() {
-    this.rq = requestAnimationFrame(this.play.bind(this));
-
+      this.rq = requestAnimationFrame(this.play.bind(this));
     // bg
     for (let i = 0; i < this.size; i++) {
       for (let j = 0; j < this.size; j++) {
@@ -297,11 +299,8 @@ class Mario {
       this.bgAu.pause();
       this.winAu.volume = 0.1;
       this.winAu.play();
-      this.win = true;
       cancelAnimationFrame(this.rq);
-      alert(
-        "You earn a kiss from princess. Ah no! How can you feel that since you don't have any girlfriend!"
-      );
+      this.ctx.drawImage(this.winImg, 0,0,900,900);
     }
   }
 
@@ -495,6 +494,7 @@ function game() {
   } while (hint === 0);
   mario.finishMaze();
   mario.play();
+
 }
 
 window.onload = () => {
@@ -543,20 +543,20 @@ window.onload = () => {
     alert("This is a Mario Maze fangame project belong to discrete mathematics final exam. It applies the knowledge of finding shortest path, namely the Dijkstra's algorithm to help mario find the shortest way to rescue princess in short time! \n\n Our team: \n Nguyen Khang Duy \n Le Ho Hai Duong \n Do Ngoc Anh Vien \n Huynh Cong Dat");
   }
 
-  window.addEventListener("keydown", (e) => {
-    switch (e.key) {
-      case "ArrowUp":
-        mario.moveUp();
-        break;
-      case "ArrowDown":
-        mario.moveDown();
-        break;
-      case "ArrowLeft":
-        mario.moveLeft();
-        break;
-      case "ArrowRight":
-        mario.moveRight();
-        break;
-    }
-  });
+    window.addEventListener("keydown", (e) => {
+        switch (e.key) {
+          case "ArrowUp":
+            mario.moveUp();
+            break;
+          case "ArrowDown":
+            mario.moveDown();
+            break;
+          case "ArrowLeft":
+            mario.moveLeft();
+            break;
+          case "ArrowRight":
+            mario.moveRight();
+            break;
+        }
+    });
 };
