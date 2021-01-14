@@ -59,7 +59,7 @@ class Mario {
     this.time = 30;
     // player
     this.win = false;
-    this.start = { x: 0, y: ~~(Math.random() * (this.size - 1) + 1 };
+    this.start = { x: 0, y: ~~(Math.random() * (this.size - 1) + 1) };
     this.player = this.start;
     this.end = { x: 29, y: ~~(Math.random() * (this.size - 1) + 1) };
     //canvas stuff
