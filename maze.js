@@ -1,11 +1,10 @@
-const canvas = document.getElementById("myCanvas");
-const ctx = canvas.getContext("2d");
-
 class Mario {
   constructor() {
     this.size = 30;
     this.squareSize = 30;
     this.grid = [];
+
+    // image
     this.marioImg = new Image();
     this.marioImg.src = "mario.png";
     this.peachImg = new Image();
@@ -16,18 +15,66 @@ class Mario {
     this.coinImg.src = "coin.png";
     this.mushroomImg = new Image();
     this.mushroomImg.src = "mushroom.png";
+    this.bgImg = new Image();
+    this.bgImg.src = "bg.png";
 
+    //audio
     this.bgAu = new Audio("theme.mp3");
     this.winAu = new Audio("winTheme.mp3");
-    this.start = { x: 0, y: 1 };
-    this.player = this.start;
-    this.end = { x: 29, y: 28 };
+    this.loseAu = new Audio("lose.mp3");
+
+    //others
+    this.start = null;
+    this.player = null;
+    this.end = null;
     this.rq = null;
+    this.canvas = null;
+    this.ctx = null;
+    this.div = document.getElementById("canvasDiv");
+    this.time = null;
+    this.win = null;
+    this.interval = null;
   }
 
+  timing() {
+    document.getElementById("time").innerHTML = `You have ${mario.time} second left`;
+    this.interval = setInterval(() => {
+      this.time--;
+      document.getElementById("time").innerHTML = `You have ${this.time} second left!`;
+      if(this.time == 0) {
+        this.loseAu.volume = 0.1;
+        this.bgAu.pause();
+        this.loseAu.play();
+        alert("Bowser: Hah! Loser! Your princess now be mine!");
+        clearInterval(this.interval);
+        cancelAnimationFrame(this.rq);
+      } else if(this.win) {
+        clearInterval(this.interval);
+        cancelAnimationFrame(this.rq);
+      }
+    },1000);
+  }
+
+  init() {
+    this.time = 30;
+    // player
+    this.win = false;
+    this.start = { x: 0, y: ~~(Math.random() * this.size) };
+    this.player = this.start;
+    this.end = { x: 29, y: ~~(Math.random() * (this.size - 1) + 1) };
+    //canvas stuff
+    this.canvas = document.createElement("canvas");
+    this.canvas.id = "myCanvas";
+    this.canvas.width = 900;
+    this.canvas.height = 900;
+    this.ctx = this.canvas.getContext("2d");
+    this.div.appendChild(this.canvas);
+    this.bgAu.volume = 0.1;
+    this.bgAu.play();
+  }
   drawRect(i, j, style = "black") {
-    ctx.fillStyle = style;
-    ctx.fillRect(
+    this.ctx.fillStyle = style;
+    this.ctx.fillRect(
       i * this.size,
       j * this.size,
       this.squareSize,
@@ -37,14 +84,12 @@ class Mario {
 
   play() {
     this.rq = requestAnimationFrame(this.play.bind(this));
-    this.bgAu.volume = 0.1;
-    this.bgAu.play();
 
     // bg
     for (let i = 0; i < this.size; i++) {
       for (let j = 0; j < this.size; j++) {
         if (this.grid[i][j] == false) {
-          ctx.drawImage(
+          this.ctx.drawImage(
             this.brickImg,
             i * this.squareSize,
             j * this.squareSize,
@@ -56,7 +101,7 @@ class Mario {
     }
 
     //mario
-    ctx.drawImage(
+    this.ctx.drawImage(
       this.marioImg,
       this.player.x * this.squareSize,
       this.player.y * this.squareSize,
@@ -65,7 +110,7 @@ class Mario {
     );
 
     //peach
-    ctx.drawImage(
+    this.ctx.drawImage(
       this.peachImg,
       this.end.x * this.squareSize,
       this.end.y * this.squareSize,
@@ -74,22 +119,21 @@ class Mario {
     );
 
     for (let i = 5; i < this.size; i += 5) {
-      ctx.drawImage(
+      this.ctx.drawImage(
         this.coinImg,
-        0,
         i * this.squareSize,
+        0,
         this.squareSize,
         this.squareSize
       );
-      ctx.drawImage(
+      this.ctx.drawImage(
         this.mushroomImg,
-        (this.size - 1) * this.squareSize,
         i * this.squareSize,
+        (this.size - 1) * this.squareSize,
         this.squareSize,
         this.squareSize
       );
     }
-
     this.checkWin();
   }
 
@@ -251,8 +295,11 @@ class Mario {
       this.bgAu.pause();
       this.winAu.volume = 0.1;
       this.winAu.play();
+      this.win = true;
       cancelAnimationFrame(this.rq);
-      alert("You earn a kiss from princess. Ah no! How can you feel that since you don't have any girlfriend!");
+      alert(
+        "You earn a kiss from princess. Ah no! How can you feel that since you don't have any girlfriend!"
+      );
     }
   }
 
@@ -266,63 +313,78 @@ class Mario {
   }
 
   inbound(cell) {
-    return cell.x > -1 && cell.y > -1 && cell.x < this.size && cell.y < this.size;
+    return (
+      cell.x > -1 && cell.y > -1 && cell.x < this.size && cell.y < this.size
+    );
   }
 
   random_range(start, end) {
-    return Math.floor(Math.random() * (end - start) + start);
+    return ~~(Math.random() * (end - start) + start);
   }
 
   find_path(x1, y1, x2, y2) {
-    let path = Array.from({ length: this.size * this.size }, () => ({
+    const path = Array.from({ length: this.size * this.size }, () => ({
       weight: -1,
       adjacent: -1,
     }));
+
     let previous_path = Object;
     //path.fill(-1);
     let visited = new Set([x1 + y1 * this.size]);
     {
       let center = { x: x1, y: y1 };
-  
+
       let cell_top = { x: center.x, y: center.y - 1 };
       let cell_bot = { x: center.x, y: center.y + 1 };
       let cell_left = { x: center.x - 1, y: center.y };
       let cell_right = { x: center.x + 1, y: center.y };
+
       if (this.inbound(cell_top)) {
-        if (mario.grid[cell_top.x][cell_top.y]) {
-          path[cell_top.x + cell_top.y * 30].weight = 1;
-          path[cell_top.x + cell_top.y * 30].adjacent = visited.getByIndex(0);
-          visited.add(cell_top.x + cell_top.y * 30);
+        if (this.grid[cell_top.x][cell_top.y]) {
+          path[cell_top.x + cell_top.y * this.size].weight = 1;
+          path[
+            cell_top.x + cell_top.y * this.size
+          ].adjacent = visited.getByIndex(0);
+          visited.add(cell_top.x + cell_top.y * this.size);
         }
       }
       if (this.inbound(cell_left)) {
-        if (mario.grid[cell_left.x][cell_left.y]) {
-          path[cell_left.x + cell_left.y * 30].weight = 1;
-          path[cell_left.x + cell_left.y * 30].adjacent = visited.getByIndex(0);
-          visited.add(cell_left.x + cell_left.y * 30);
+        if (this.grid[cell_left.x][cell_left.y]) {
+          path[cell_left.x + cell_left.y * this.size].weight = 1;
+          path[
+            cell_left.x + cell_left.y * this.size
+          ].adjacent = visited.getByIndex(0);
+          visited.add(cell_left.x + cell_left.y * this.size);
         }
       }
       if (this.inbound(cell_right)) {
-        if (mario.grid[cell_right.x][cell_right.y]) {
-          path[cell_right.x + cell_right.y * 30].weight = 1;
-          path[cell_right.x + cell_right.y * 30].adjacent = visited.getByIndex(0);
-          visited.add(cell_right.x + cell_right.y * 30);
+        if (this.grid[cell_right.x][cell_right.y]) {
+          path[cell_right.x + cell_right.y * this.size].weight = 1;
+          path[
+            cell_right.x + cell_right.y * this.size
+          ].adjacent = visited.getByIndex(0);
+          visited.add(cell_right.x + cell_right.y * this.size);
         }
       }
       if (this.inbound(cell_bot)) {
-        if (mario.grid[cell_bot.x][cell_bot.y]) {
-          path[cell_bot.x + cell_bot.y * 30].weight = 1;
-          path[cell_bot.x + cell_bot.y * 30].adjacent = visited.getByIndex(0);
-          visited.add(cell_bot.x + cell_bot.y * 30);
+        if (this.grid[cell_bot.x][cell_bot.y]) {
+          path[cell_bot.x + cell_bot.y * this.size].weight = 1;
+          path[
+            cell_bot.x + cell_bot.y * this.size
+          ].adjacent = visited.getByIndex(0);
+          visited.add(cell_bot.x + cell_bot.y * this.size);
         }
       }
     }
-  
+
     do {
       previous_path = JSON.parse(JSON.stringify(path));
       for (let i = 1; i < visited.size; ++i) {
         let element = visited.getByIndex(i);
-        let center = { x: element % 30, y: Math.floor(element / 30) };
+        let center = {
+          x: element % this.size,
+          y: Math.floor(element / this.size),
+        };
         let cell_top = { x: center.x, y: center.y - 1 };
         let cell_bot = { x: center.x, y: center.y + 1 };
         let cell_left = { x: center.x - 1, y: center.y };
@@ -330,78 +392,82 @@ class Mario {
         if (this.inbound(cell_top)) {
           if (mario.grid[cell_top.x][cell_top.y])
             if (
-              path[cell_top.x + cell_top.y * 30].weight == -1 ||
-              path[cell_top.x + cell_top.y * 30].weight >
-                path[center.x + center.y * 30].weight + 1
+              path[cell_top.x + cell_top.y * this.size].weight == -1 ||
+              path[cell_top.x + cell_top.y * this.size].weight >
+                path[center.x + center.y * this.size].weight + 1
             ) {
-              path[cell_top.x + cell_top.y * 30].weight =
-                path[center.x + center.y * 30].weight + 1;
-              path[cell_top.x + cell_top.y * 30].adjacent =
-                center.x + center.y * 30;
-              visited.add(cell_top.x + cell_top.y * 30);
+              path[cell_top.x + cell_top.y * this.size].weight =
+                path[center.x + center.y * this.size].weight + 1;
+              path[cell_top.x + cell_top.y * this.size].adjacent =
+                center.x + center.y * this.size;
+              visited.add(cell_top.x + cell_top.y * this.size);
             }
         }
         if (this.inbound(cell_left)) {
-          if (mario.grid[cell_left.x][cell_left.y])
+          if (this.grid[cell_left.x][cell_left.y])
             if (
-              path[cell_left.x + cell_left.y * 30].weight == -1 ||
-              path[cell_left.x + cell_left.y * 30].weight >
-                path[center.x + center.y * 30].weight + 1
+              path[cell_left.x + cell_left.y * this.size].weight == -1 ||
+              path[cell_left.x + cell_left.y * this.size].weight >
+                path[center.x + center.y * this.size].weight + 1
             ) {
-              path[cell_left.x + cell_left.y * 30].weight =
-                path[center.x + center.y * 30].weight + 1;
-              path[cell_left.x + cell_left.y * 30].adjacent =
-                center.x + center.y * 30;
-              visited.add(cell_left.x + cell_left.y * 30);
+              path[cell_left.x + cell_left.y * this.size].weight =
+                path[center.x + center.y * this.size].weight + 1;
+              path[cell_left.x + cell_left.y * this.size].adjacent =
+                center.x + center.y * this.size;
+              visited.add(cell_left.x + cell_left.y * this.size);
             }
         }
         if (this.inbound(cell_right)) {
-          if (mario.grid[cell_right.x][cell_right.y]) {
+          if (this.grid[cell_right.x][cell_right.y]) {
             if (
-              path[cell_right.x + cell_right.y * 30].weight == -1 ||
-              path[cell_right.x + cell_right.y * 30].weight >
-                path[center.x + center.y * 30].weight + 1
+              path[cell_right.x + cell_right.y * this.size].weight == -1 ||
+              path[cell_right.x + cell_right.y * this.size].weight >
+                path[center.x + center.y * this.size].weight + 1
             ) {
-              path[cell_right.x + cell_right.y * 30].weight =
-                path[center.x + center.y * 30].weight + 1;
-              path[cell_right.x + cell_right.y * 30].adjacent =
-                center.x + center.y * 30;
-              visited.add(cell_right.x + cell_right.y * 30);
+              path[cell_right.x + cell_right.y * this.size].weight =
+                path[center.x + center.y * this.size].weight + 1;
+              path[cell_right.x + cell_right.y * this.size].adjacent =
+                center.x + center.y * this.size;
+              visited.add(cell_right.x + cell_right.y * this.size);
             }
           }
         }
         if (this.inbound(cell_bot)) {
-          if (mario.grid[cell_bot.x][cell_bot.y]) {
+          if (this.grid[cell_bot.x][cell_bot.y]) {
             if (
-              path[cell_bot.x + cell_bot.y * 30].weight == -1 ||
-              path[cell_bot.x + cell_bot.y * 30].weight >
-                path[center.x + center.y * 30].weight + 1
+              path[cell_bot.x + cell_bot.y * this.size].weight == -1 ||
+              path[cell_bot.x + cell_bot.y * this.size].weight >
+                path[center.x + center.y * this.size].weight + 1
             ) {
-              path[cell_bot.x + cell_bot.y * 30].weight =
-                path[center.x + center.y * 30].weight + 1;
-              path[cell_bot.x + cell_bot.y * 30].adjacent =
-                center.x + center.y * 30;
+              path[cell_bot.x + cell_bot.y * this.size].weight =
+                path[center.x + center.y * this.size].weight + 1;
+              path[cell_bot.x + cell_bot.y * this.size].adjacent =
+                center.x + center.y * this.size;
             }
-            visited.add(cell_bot.x + cell_bot.y * 30);
+            visited.add(cell_bot.x + cell_bot.y * this.size);
           }
         }
       }
     } while (!this.arraysEqual(path, previous_path));
     let result = [];
-    let current = x2 + y2 * 30;
+    let current = x2 + y2 * this.size;
     do {
       if (path[current].adjacent == -1 || path[current].weight == -1) {
         return 0;
       }
-      result.push({ x: current % 30, y: Math.floor(current / 30) });
+      result.push({
+        x: current % this.size,
+        y: Math.floor(current / this.size),
+      });
       current = path[current].adjacent;
     } while (current != visited.getByIndex(0));
+
     return result;
   }
 
- showHint(hint) {
-   this.player.x = this.start.x;
-   this.player.y = this.start.y;
+  showHint(hint) {
+    this.player.x = this.start.x;
+    this.player.y = this.start.y;
     for (let i = 1; i < hint.length; i++) {
       mario.drawRect(hint[i].x, hint[i].y, "red");
     }
@@ -412,25 +478,69 @@ Set.prototype.getByIndex = function (index) {
   return [...this][index];
 };
 
-
-
 const mario = new Mario();
-window.onload = () => {
+function game() {
+  let hint = null;
   do {
     mario.createGrid();
     mario.createMaze();
-  } while (mario.find_path(mario.start.x, mario.start.y, mario.end.x, mario.end.y) === 0);
+    hint = mario.find_path(
+      mario.start.x,
+      mario.start.y,
+      mario.end.x,
+      mario.end.y
+    );
+  } while (hint === 0);
   mario.finishMaze();
-  
-  let hint = mario.find_path(1, 0, 29, 28);
-  let clicked = false;
-  //show hint
-  const btn = document.getElementById("solutionBtn");
-  btn.onclick = () => {
-    mario.showHint(hint);
-  }
   mario.play();
-  
+}
+
+window.onload = () => {
+  //button
+  let hasPlayed = false;
+  const solutionBtn = document.getElementById("solutionBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const aboutBtn = document.getElementById("aboutBtn");
+  const playBtn = document.getElementById("playBtn");
+
+  mario.init();
+  mario.ctx.drawImage(mario.bgImg,0,0,900,900);
+  //play game
+  playBtn.onclick = () => {
+    hasPlayed= true;
+    mario.ctx.clearRect(0,0,900,900);
+    game();
+    mario.timing();
+  }
+
+    //show hint
+    solutionBtn.onclick = () => {
+      if(hasPlayed) {
+        hint = mario.find_path(
+          mario.player.x,
+          mario.player.y,
+          mario.end.x,
+          mario.end.y
+          );
+          mario.showHint(hint);
+      }
+      };
+      // reset
+    resetBtn.onclick = () => {
+      if(hasPlayed) {
+        mario.div.removeChild(mario.canvas);
+        mario.init();
+        mario.div.appendChild(mario.canvas);
+        game();
+        clearInterval(mario.interval);
+        mario.timing();
+      }
+    };
+  //about
+  aboutBtn.onclick = () => {
+    alert("This is a Mario Maze fangame project belong to discrete mathematics final exam. It applies the knowledge of finding shortest path, namely the Dijkstra's algorithm to help mario find the shortest way to rescue princess in short time! \n\n Our team: \n Nguyen Khang Duy \n Le Ho Hai Duong \n Do Ngoc Anh Vien \n Huynh Cong Dat");
+  }
+
   window.addEventListener("keydown", (e) => {
     switch (e.key) {
       case "ArrowUp":
