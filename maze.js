@@ -563,7 +563,7 @@ window.onload = () => {
   //instruction
   instrucBtn.onclick = () => {
     alert(
-      "The princess has been kidnaped by Bowser and imprisoned in a maze. Your mission is to cross the maze to rescue the princess. You only have 30 seconds, so hurry up before it's too late!\n\nHow to play:\nUse Arrow keys to move"
+      "The princess has been kidnaped by Bowser and imprisoned in a maze. Your mission is to cross the maze and rescue your princess. You only have 30 seconds, so hurry up before it's too late!\n\nHow to play:\nUse Arrow keys to move"
     );
   };
   window.addEventListener("keydown", (e) => {
