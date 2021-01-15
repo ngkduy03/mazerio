@@ -23,9 +23,11 @@ class Mario {
     this.winImg.src = "winingImg.jpg";
     this.loseImg = new Image();
     this.loseImg.src = "loseImg.jpg";
-
+    this.timerImg = new Image();
+    this.timerImg.src = "timer.png";
     //audio
     this.bgAu = new Audio("theme.mp3");
+    this.bgAu.loop = true;
     this.winAu = new Audio("winTheme.mp3");
     this.loseAu = new Audio("lose.mp3");
 
@@ -41,29 +43,12 @@ class Mario {
     this.interval = null;
   }
 
-  timing() {
-    document.getElementById("timer").innerHTML = `You have ${mario.time} second left`;
-    this.interval = setInterval(() => {
-      this.time--;
-      document.getElementById("timer").innerHTML = `You have ${this.time} second left!`;
-      if(this.time == 0) {
-        this.loseAu.volume = 0.1;
-        this.bgAu.pause();
-        this.loseAu.play();
-        this.ctx.drawImage(this.loseImg,0,0,900,900);
-        clearInterval(this.interval);
-        cancelAnimationFrame(this.rq);
-      }
-    },1000);
-  }
-
   init() {
     this.time = 30;
     // player
     this.start = { x: 0, y: ~~(Math.random() * (this.size - 2) + 1) };
     this.player = this.start;
     this.end = { x: 29, y: ~~(Math.random() * (this.size - 2) + 1) };
-    //canvas stuff
     this.canvas = document.createElement("canvas");
     this.canvas.id = "myCanvas";
     this.canvas.width = 900;
@@ -73,23 +58,41 @@ class Mario {
     this.bgAu.volume = 0.1;
     this.bgAu.play();
   }
-  
+
+  timing() {
+    this.interval = setInterval(() => {
+      this.time--;
+      if (this.time == 0) {
+        this.loseAu.volume = 0.1;
+        this.bgAu.pause();
+        this.loseAu.play();
+        this.ctx.drawImage(this.loseImg, 0, 0, 900, 900);
+        clearInterval(this.interval);
+        cancelAnimationFrame(this.rq);
+      }
+    }, 1000);
+  }
+
   drawRect(i, j, style = "black") {
-      this.ctx.fillStyle = style;
-      this.ctx.fillRect(
-        i * this.size,
-        j * this.size,
-        this.squareSize,
-        this.squareSize
-      );
+    this.ctx.fillStyle = style;
+    this.ctx.fillRect(
+      i * this.size,
+      j * this.size,
+      this.squareSize,
+      this.squareSize
+    );
   }
 
   play() {
-      this.rq = requestAnimationFrame(this.play.bind(this));
+    this.rq = requestAnimationFrame(this.play.bind(this));
+
     // bg
     for (let i = 0; i < this.size; i++) {
       for (let j = 0; j < this.size; j++) {
-        if (this.grid[i][j] == false) {
+        if ((i == 0 && j == 0) || (i == 1 && j == 0)) {
+          this.drawRect(i,j);
+        }
+        else if (this.grid[i][j] == false) {
           this.ctx.drawImage(
             this.brickImg,
             i * this.squareSize,
@@ -135,6 +138,16 @@ class Mario {
         this.squareSize
       );
     }
+    this.ctx.drawImage(this.timerImg, 0, 0, this.squareSize, this.squareSize);
+    this.ctx.fillStyle = "white";
+    this.ctx.font = "30px Arial";
+    this.ctx.fillText(
+      parseInt((this.time / 10)) > 0? `${ this.time}`: `0${this.time}`,
+      this.squareSize,
+      this.squareSize - 5,
+      this.squareSize,
+      this.squareSize
+    );
     this.checkWin();
   }
 
@@ -298,9 +311,7 @@ class Mario {
       this.winAu.play();
       cancelAnimationFrame(this.rq);
       clearInterval(this.interval);
-      this.ctx.drawImage(this.winImg, 0,0,900,900);
-      document.getElementById("noti").innerHTML = "Congratulation!";
-      document.getElementById("timer").innerHTML = `You have successfully rescued the princess in ${this.time} seconds`;
+      this.ctx.drawImage(this.winImg, 0, 0, 900, 900);
     }
   }
 
@@ -470,7 +481,13 @@ class Mario {
     this.player.x = this.start.x;
     this.player.y = this.start.y;
     for (let i = 1; i < hint.length; i++) {
-      this.ctx.drawImage(this.flowerImg, hint[i].x*this.squareSize, hint[i].y*this.squareSize,this.squareSize,this.squareSize);
+      this.ctx.drawImage(
+        this.flowerImg,
+        hint[i].x * this.squareSize,
+        hint[i].y * this.squareSize,
+        this.squareSize,
+        this.squareSize
+      );
     }
   }
 }
@@ -494,7 +511,6 @@ function game() {
   } while (hint === 0);
   mario.finishMaze();
   mario.play();
-
 }
 
 window.onload = () => {
@@ -504,59 +520,66 @@ window.onload = () => {
   const resetBtn = document.getElementById("resetBtn");
   const aboutBtn = document.getElementById("aboutBtn");
   const playBtn = document.getElementById("playBtn");
-
+  const instrucBtn = document.getElementById("instruction");
   mario.init();
-  mario.ctx.drawImage(mario.bgImg,0,0,900,900);
+  mario.ctx.drawImage(mario.bgImg, 0, 0, 900, 900);
   //play game
   playBtn.onclick = () => {
-    hasPlayed= true;
-    mario.ctx.clearRect(0,0,900,900);
+    hasPlayed = true;
+    mario.ctx.clearRect(0, 0, 900, 900);
     game();
     mario.timing();
-  }
+  };
 
-    //show hint
-    solutionBtn.onclick = () => {
-      if(hasPlayed) {
-        hint = mario.find_path(
-          mario.player.x,
-          mario.player.y,
-          mario.end.x,
-          mario.end.y
-          );
-          mario.showHint(hint);
-      }
-      };
-      // reset
-    resetBtn.onclick = () => {
-      if(hasPlayed) {
-        mario.div.removeChild(mario.canvas);
-        mario.init();
-        mario.div.appendChild(mario.canvas);
-        game();
-        clearInterval(mario.interval);
-        mario.timing();
-      }
-    };
+  //show hint
+  solutionBtn.onclick = () => {
+    if (hasPlayed) {
+      hint = mario.find_path(
+        mario.player.x,
+        mario.player.y,
+        mario.end.x,
+        mario.end.y
+      );
+      mario.showHint(hint);
+    }
+  };
+  // reset
+  resetBtn.onclick = () => {
+    if (hasPlayed) {
+      mario.div.removeChild(mario.canvas);
+      mario.init();
+      mario.div.appendChild(mario.canvas);
+      game();
+      clearInterval(mario.interval);
+      mario.timing();
+    }
+  };
   //about
   aboutBtn.onclick = () => {
-    alert("This is a Mario Maze fangame project belong to discrete mathematics final exam. It applies the knowledge of finding shortest path, namely the Dijkstra's algorithm to help mario find the shortest way to rescue princess in short time! \n\n Our team: \n Nguyen Khang Duy \n Le Ho Hai Duong \n Do Ngoc Anh Vien \n Huynh Cong Dat");
-  }
-
-    window.addEventListener("keydown", (e) => {
-        switch (e.key) {
-          case "ArrowUp":
-            mario.moveUp();
-            break;
-          case "ArrowDown":
-            mario.moveDown();
-            break;
-          case "ArrowLeft":
-            mario.moveLeft();
-            break;
-          case "ArrowRight":
-            mario.moveRight();
-            break;
-        }
-    });
+    alert(
+      "This is a Mario Maze fangame project belong to discrete mathematics final exam. It applies the knowledge of finding shortest path, namely the Dijkstra's algorithm to help mario find the shortest way to rescue princess in short time! \n\n Our team: \n Nguyen Khang Duy \n Le Ho Hai Duong \n Do Ngoc Anh Vien \n Huynh Cong Dat"
+    );
+  };
+  //instruction
+  instrucBtn.onclick = () => {
+    alert(
+      "The princess has been kidnaped by Bowser and imprisoned in a maze. Your mission is to cross the maze to rescue the princess. You only have 30 seconds, so hurry up before it's too late!\n\nHow to play:\nUse Arrow keys to move"
+    );
+  };
+  window.addEventListener("keydown", (e) => {
+    switch (e.key) {
+      case "ArrowUp":
+        mario.moveUp();
+        break;
+      case "ArrowDown":
+        mario.moveDown();
+        break;
+      case "ArrowLeft":
+        mario.moveLeft();
+        break;
+      case "ArrowRight":
+        mario.moveRight();
+        break;
+    }
+  });
 };
