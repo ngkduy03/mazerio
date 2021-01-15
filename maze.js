@@ -41,10 +41,12 @@ class Mario {
     this.div = document.getElementById("canvasDiv");
     this.time = null;
     this.interval = null;
+    this.count = null;
   }
 
   init() {
     this.time = 30;
+    this.count = 0;
     // player
     this.start = { x: 0, y: ~~(Math.random() * (this.size - 2) + 1) };
     this.player = this.start;
@@ -85,7 +87,7 @@ class Mario {
 
   play() {
     this.rq = requestAnimationFrame(this.play.bind(this));
-
+    this.count++;
     // bg
     for (let i = 0; i < this.size; i++) {
       for (let j = 0; j < this.size; j++) {
@@ -527,8 +529,16 @@ window.onload = () => {
   playBtn.onclick = () => {
     hasPlayed = true;
     mario.ctx.clearRect(0, 0, 900, 900);
-    game();
-    mario.timing();
+    if (mario.time == 0 || (mario.player.x == mario.end.x && mario.player.y == mario.end.y)) {
+      mario.div.removeChild(mario.canvas);
+      mario.init();
+      mario.div.appendChild(mario.canvas);
+    }
+    
+    if(mario.count < 1) {
+      game();
+      mario.timing();
+    }
   };
 
   //show hint
@@ -543,17 +553,7 @@ window.onload = () => {
       mario.showHint(hint);
     }
   };
-  // reset
-  resetBtn.onclick = () => {
-    if (hasPlayed) {
-      mario.div.removeChild(mario.canvas);
-      mario.init();
-      mario.div.appendChild(mario.canvas);
-      game();
-      clearInterval(mario.interval);
-      mario.timing();
-    }
-  };
+  
   //about
   aboutBtn.onclick = () => {
     alert(
@@ -563,7 +563,7 @@ window.onload = () => {
   //instruction
   instrucBtn.onclick = () => {
     alert(
-      "The princess has been kidnaped by Bowser and imprisoned in a maze. Your mission is to cross the maze and rescue your princess. You only have 30 seconds, so hurry up before it's too late!\n\nHow to play:\nUse Arrow keys to move"
+      "The princess has been kidnaped by Bowser and imprisoned in a maze. Your mission is to cross the maze to rescue the princess. You only have 30 seconds, so hurry up before it's too late!\n\nHow to play:\nUse Arrow keys to move"
     );
   };
   window.addEventListener("keydown", (e) => {
