@@ -68,9 +68,10 @@ class Mario {
         this.loseAu.volume = 0.1;
         this.bgAu.pause();
         this.loseAu.play();
-        this.ctx.drawImage(this.loseImg, 0, 0, 900, 900);
         clearInterval(this.interval);
         cancelAnimationFrame(this.rq);
+        this.ctx.drawImage(this.loseImg, 0, 0, 900, 900);
+        document.getElementById("playBtn").innerHTML = "Again";
       }
     }, 1000);
   }
@@ -87,7 +88,7 @@ class Mario {
 
   play() {
     this.rq = requestAnimationFrame(this.play.bind(this));
-    this.count++;
+    this.count < 2 && this.count++;
     // bg
     for (let i = 0; i < this.size; i++) {
       for (let j = 0; j < this.size; j++) {
@@ -314,6 +315,7 @@ class Mario {
       cancelAnimationFrame(this.rq);
       clearInterval(this.interval);
       this.ctx.drawImage(this.winImg, 0, 0, 900, 900);
+      document.getElementById("playBtn").innerHTML = "Again";
     }
   }
 
@@ -519,7 +521,6 @@ window.onload = () => {
   //button
   let hasPlayed = false;
   const solutionBtn = document.getElementById("solutionBtn");
-  const resetBtn = document.getElementById("resetBtn");
   const aboutBtn = document.getElementById("aboutBtn");
   const playBtn = document.getElementById("playBtn");
   const instrucBtn = document.getElementById("instruction");
@@ -538,6 +539,7 @@ window.onload = () => {
     if(mario.count < 1) {
       game();
       mario.timing();
+      playBtn.innerHTML = "";
     }
   };
 
