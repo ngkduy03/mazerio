@@ -41,12 +41,10 @@ class Mario {
     this.div = document.getElementById("canvasDiv");
     this.time = null;
     this.interval = null;
-    this.count = null;
   }
 
   init() {
     this.time = 30;
-    this.count = 0;
     // player
     this.start = { x: 0, y: ~~(Math.random() * (this.size - 2) + 1) };
     this.player = this.start;
@@ -72,6 +70,7 @@ class Mario {
         cancelAnimationFrame(this.rq);
         this.ctx.drawImage(this.loseImg, 0, 0, 900, 900);
         document.getElementById("playBtn").innerHTML = "Again";
+        document.getElementById("playBtn").style.display = "block";
       }
     }, 1000);
   }
@@ -88,12 +87,11 @@ class Mario {
 
   play() {
     this.rq = requestAnimationFrame(this.play.bind(this));
-    this.count < 2 && this.count++;
     // bg
     for (let i = 0; i < this.size; i++) {
       for (let j = 0; j < this.size; j++) {
         if ((i == 0 && j == 0) || (i == 1 && j == 0)) {
-          this.drawRect(i,j);
+          this.drawRect(i, j);
         }
         else if (this.grid[i][j] == false) {
           this.ctx.drawImage(
@@ -145,7 +143,7 @@ class Mario {
     this.ctx.fillStyle = "white";
     this.ctx.font = "30px Arial";
     this.ctx.fillText(
-      parseInt((this.time / 10)) > 0? `${ this.time}`: `0${this.time}`,
+      parseInt((this.time / 10)) > 0 ? `${this.time}` : `0${this.time}`,
       this.squareSize,
       this.squareSize - 5,
       this.squareSize,
@@ -316,6 +314,7 @@ class Mario {
       clearInterval(this.interval);
       this.ctx.drawImage(this.winImg, 0, 0, 900, 900);
       document.getElementById("playBtn").innerHTML = "Again";
+      document.getElementById("playBtn").style.display = "block";
     }
   }
 
@@ -410,7 +409,7 @@ class Mario {
             if (
               path[cell_top.x + cell_top.y * this.size].weight == -1 ||
               path[cell_top.x + cell_top.y * this.size].weight >
-                path[center.x + center.y * this.size].weight + 1
+              path[center.x + center.y * this.size].weight + 1
             ) {
               path[cell_top.x + cell_top.y * this.size].weight =
                 path[center.x + center.y * this.size].weight + 1;
@@ -424,7 +423,7 @@ class Mario {
             if (
               path[cell_left.x + cell_left.y * this.size].weight == -1 ||
               path[cell_left.x + cell_left.y * this.size].weight >
-                path[center.x + center.y * this.size].weight + 1
+              path[center.x + center.y * this.size].weight + 1
             ) {
               path[cell_left.x + cell_left.y * this.size].weight =
                 path[center.x + center.y * this.size].weight + 1;
@@ -438,7 +437,7 @@ class Mario {
             if (
               path[cell_right.x + cell_right.y * this.size].weight == -1 ||
               path[cell_right.x + cell_right.y * this.size].weight >
-                path[center.x + center.y * this.size].weight + 1
+              path[center.x + center.y * this.size].weight + 1
             ) {
               path[cell_right.x + cell_right.y * this.size].weight =
                 path[center.x + center.y * this.size].weight + 1;
@@ -453,7 +452,7 @@ class Mario {
             if (
               path[cell_bot.x + cell_bot.y * this.size].weight == -1 ||
               path[cell_bot.x + cell_bot.y * this.size].weight >
-                path[center.x + center.y * this.size].weight + 1
+              path[center.x + center.y * this.size].weight + 1
             ) {
               path[cell_bot.x + cell_bot.y * this.size].weight =
                 path[center.x + center.y * this.size].weight + 1;
@@ -501,25 +500,9 @@ Set.prototype.getByIndex = function (index) {
 };
 
 const mario = new Mario();
-function game() {
-  let hint = null;
-  do {
-    mario.createGrid();
-    mario.createMaze();
-    hint = mario.find_path(
-      mario.start.x,
-      mario.start.y,
-      mario.end.x,
-      mario.end.y
-    );
-  } while (hint === 0);
-  mario.finishMaze();
-  mario.play();
-}
-
 window.onload = () => {
-  //button
   let hasPlayed = false;
+  //button
   const solutionBtn = document.getElementById("solutionBtn");
   const aboutBtn = document.getElementById("aboutBtn");
   const playBtn = document.getElementById("playBtn");
@@ -530,32 +513,49 @@ window.onload = () => {
   playBtn.onclick = () => {
     hasPlayed = true;
     mario.ctx.clearRect(0, 0, 900, 900);
-    if (mario.time == 0 || (mario.player.x == mario.end.x && mario.player.y == mario.end.y)) {
+    if (mario.time == 0 ||
+      (mario.player.x == mario.end.x && mario.player.y == mario.end.y)) {
       mario.div.removeChild(mario.canvas);
       mario.init();
       mario.div.appendChild(mario.canvas);
     }
-    
-    if(mario.count < 1) {
-      game();
-      mario.timing();
-      playBtn.innerHTML = "";
-    }
+
+    // game
+    let hint = null;
+    do {
+      mario.createGrid();
+      mario.createMaze();
+      hint = mario.find_path(
+        mario.start.x,
+        mario.start.y,
+        mario.end.x,
+        mario.end.y
+      );
+    } while (hint === 0);
+    mario.finishMaze();
+    mario.play();
+    mario.timing();
+
+    // you cannot click button until game done.
+    playBtn.style.display = "none";
   };
 
   //show hint
   solutionBtn.onclick = () => {
     if (hasPlayed) {
-      hint = mario.find_path(
-        mario.player.x,
-        mario.player.y,
-        mario.end.x,
-        mario.end.y
-      );
-      mario.showHint(hint);
-    }
+        hint = mario.find_path(
+          mario.player.x,
+          mario.player.y,
+          mario.end.x,
+          mario.end.y
+        );
+        if (mario.player.x != mario.end.x && mario.player.y != mario.end.y && mario.time != 0) {
+          mario.showHint(hint);
+        }
+      }
+
   };
-  
+
   //about
   aboutBtn.onclick = () => {
     alert(
@@ -568,6 +568,7 @@ window.onload = () => {
       "The princess has been kidnaped by Bowser and imprisoned in a maze. Your mission is to cross the maze to rescue the princess. You only have 30 seconds, so hurry up before it's too late!\n\nHow to play:\nUse Arrow keys to move"
     );
   };
+  
   window.addEventListener("keydown", (e) => {
     switch (e.key) {
       case "ArrowUp":
