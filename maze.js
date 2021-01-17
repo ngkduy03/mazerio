@@ -221,6 +221,22 @@ class Mario {
     }
   }
 
+  moreWay(i = 0, n = 5) {
+    if(i == n) {
+      return;
+    }
+
+    let x = ~~(Math.random() * (this.size - 1) + 1);
+    let y = ~~(Math.random() * (this.size - 1) + 1);
+    if(this.grid[x][y] == false) {
+      this.grid[x][y] = true;
+    } else {
+      this.moreWay(i,n);
+    } 
+
+    this.moreWay(++i, n);
+  }
+
   createMaze() {
     const cell = {
       x: ~~(Math.random() * this.size),
@@ -251,6 +267,8 @@ class Mario {
       }
       walls.splice(wallIndex, 1);
     }
+
+    this.moreWay();
   }
 
   finishMaze() {
@@ -499,7 +517,7 @@ class Mario {
             hint[i].y * this.squareSize,
             this.squareSize,
             this.squareSize);
-        },1000);
+        },1500);
     }
   }
 }
