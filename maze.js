@@ -71,6 +71,7 @@ class Mario {
         clearInterval(this.interval);
         cancelAnimationFrame(this.rq);
         this.ctx.drawImage(this.loseImg, 0, 0, 900, 900);
+        document.getElementById("playBtn").style.display = "block";
         document.getElementById("playBtn").innerHTML = "Again";
       }
     }, 1000);
@@ -315,6 +316,7 @@ class Mario {
       cancelAnimationFrame(this.rq);
       clearInterval(this.interval);
       this.ctx.drawImage(this.winImg, 0, 0, 900, 900);
+      document.getElementById("playBtn").style.display = "block";
       document.getElementById("playBtn").innerHTML = "Again";
     }
   }
@@ -545,7 +547,9 @@ window.onload = () => {
     if(mario.count < 1) {
       game();
       mario.timing();
-      playBtn.innerHTML = "";
+      playBtn.style.display = "none";
+      document.getElementById("solutionBtn").style.display = "block";
+
     }
   };
 
@@ -559,6 +563,7 @@ window.onload = () => {
         mario.end.y
       );
       mario.showHint(hint);
+      solutionBtn.style.display = "none";
     }
   };
   
