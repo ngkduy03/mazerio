@@ -517,7 +517,7 @@ class Mario {
             hint[i].y * this.squareSize,
             this.squareSize,
             this.squareSize);
-        },1500);
+        },3000);
     }
   }
 }
