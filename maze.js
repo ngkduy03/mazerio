@@ -41,12 +41,14 @@ class Mario {
     this.div = document.getElementById("canvasDiv");
     this.time = null;
     this.interval = null;
-    this.count = null;
+    this.hasWin = null;
+    this.timeOut = null;
   }
 
   init() {
     this.time = 30;
-    this.count = 0;
+    this.hasWin = false;
+    this.timeOut = false;
     // player
     this.start = { x: 0, y: ~~(Math.random() * (this.size - 2) + 1) };
     this.player = this.start;
@@ -68,13 +70,44 @@ class Mario {
         this.loseAu.volume = 0.1;
         this.bgAu.pause();
         this.loseAu.play();
+        this.timeOut = true;
         clearInterval(this.interval);
         cancelAnimationFrame(this.rq);
         this.ctx.drawImage(this.loseImg, 0, 0, 900, 900);
         document.getElementById("playBtn").style.display = "block";
         document.getElementById("playBtn").innerHTML = "Again";
+
+      this.ctx.font = "50px Changa one";
+      this.ctx.fillText("Just a little bit!", 305, this.size*this.squareSize - 5);
       }
     }, 1000);
+  }
+
+  checkWin() {
+    if (this.player.x == this.end.x && this.player.y == this.end.y) {
+      this.bgAu.pause();
+      this.winAu.volume = 0.1;
+      this.winAu.play();
+      this.hasWin = true;
+      cancelAnimationFrame(this.rq);
+      clearInterval(this.interval);
+      this.ctx.drawImage(this.winImg, 0, 0, 900, 900);
+      document.getElementById("playBtn").style.display = "block";
+      document.getElementById("playBtn").innerHTML = "Again";
+      
+      this.ctx.fillStyle = "black";
+      this.ctx.font = "bold 70px Changa One ";
+      if (solutionClick) {
+        this.ctx.font = "bold 30px Changa One ";
+        this.ctx.fillText("I wonder what happen if you don’t use a solution button?", 110, this.size*this.squareSize - 20);
+      }else if(30 - this.time < 10) {
+        this.ctx.fillText("Amazing good job em!", 135, this.size*this.squareSize - 20);
+      } else if(30 - this.time < 20 && 30 - this.time >= 10) {
+        this.ctx.fillText("Awesome!", 320, this.size*this.squareSize - 20);
+      } else {
+      this.ctx.fillText("Great!", 360, this.size*this.squareSize - 20);
+    }     
+    }
   }
 
   drawRect(i, j, style = "black") {
@@ -89,14 +122,12 @@ class Mario {
 
   play() {
     this.rq = requestAnimationFrame(this.play.bind(this));
-    this.count < 2 && this.count++;
     // bg
     for (let i = 0; i < this.size; i++) {
       for (let j = 0; j < this.size; j++) {
         if ((i == 0 && j == 0) || (i == 1 && j == 0)) {
-          this.drawRect(i,j);
-        }
-        else if (this.grid[i][j] == false) {
+          this.drawRect(i, j);
+        } else if (this.grid[i][j] == false) {
           this.ctx.drawImage(
             this.brickImg,
             i * this.squareSize,
@@ -146,13 +177,17 @@ class Mario {
     this.ctx.fillStyle = "white";
     this.ctx.font = "30px Arial";
     this.ctx.fillText(
-      parseInt((this.time / 10)) > 0? `${ this.time}`: `0${this.time}`,
+      parseInt(this.time / 10) > 0 ? `${this.time}` : `0${this.time}`,
       this.squareSize,
       this.squareSize - 5,
       this.squareSize,
       this.squareSize
     );
     this.checkWin();
+    if (this.hasWin || this.timeOut) {
+      cancelAnimationFrame(this.rq);
+      return;
+    }
   }
 
   createGrid() {
@@ -222,17 +257,17 @@ class Mario {
   }
 
   moreWay(i = 0, n = 5) {
-    if(i == n) {
+    if (i == n) {
       return;
     }
 
     let x = ~~(Math.random() * (this.size - 1) + 1);
     let y = ~~(Math.random() * (this.size - 1) + 1);
-    if(this.grid[x][y] == false) {
+    if (this.grid[x][y] == false) {
       this.grid[x][y] = true;
     } else {
-      this.moreWay(i,n);
-    } 
+      this.moreWay(i, n);
+    }
 
     this.moreWay(++i, n);
   }
@@ -323,19 +358,6 @@ class Mario {
     ) {
       this.drawRect(this.player.x, this.player.y);
       this.player.x++;
-    }
-  }
-
-  checkWin() {
-    if (this.player.x == this.end.x && this.player.y == this.end.y) {
-      this.bgAu.pause();
-      this.winAu.volume = 0.1;
-      this.winAu.play();
-      cancelAnimationFrame(this.rq);
-      clearInterval(this.interval);
-      this.ctx.drawImage(this.winImg, 0, 0, 900, 900);
-      document.getElementById("playBtn").style.display = "block";
-      document.getElementById("playBtn").innerHTML = "Again";
     }
   }
 
@@ -506,18 +528,20 @@ class Mario {
     this.player.y = this.start.y;
     for (let i = 1; i < hint.length; i++) {
       this.ctx.drawImage(
-    this.flowerImg,
-    hint[i].x * this.squareSize,
-    hint[i].y * this.squareSize,
-    this.squareSize,
-    this.squareSize
-    );
-        setTimeout(() => {
-          this.ctx.clearRect(hint[i].x * this.squareSize,
-            hint[i].y * this.squareSize,
-            this.squareSize,
-            this.squareSize);
-        },3000);
+        this.flowerImg,
+        hint[i].x * this.squareSize,
+        hint[i].y * this.squareSize,
+        this.squareSize,
+        this.squareSize
+      );
+      setTimeout(() => {
+        this.ctx.clearRect(
+          hint[i].x * this.squareSize,
+          hint[i].y * this.squareSize,
+          this.squareSize,
+          this.squareSize
+        );
+      }, 3000);
     }
   }
 }
@@ -543,6 +567,7 @@ function game() {
   mario.play();
 }
 
+let solutionClick = false;
 window.onload = () => {
   //button
   let hasPlayed = false;
@@ -554,26 +579,25 @@ window.onload = () => {
   mario.ctx.drawImage(mario.bgImg, 0, 0, 900, 900);
   //play game
   playBtn.onclick = () => {
+    solutionClick = false;
     hasPlayed = true;
     mario.ctx.clearRect(0, 0, 900, 900);
-    if (mario.time == 0 || (mario.player.x == mario.end.x && mario.player.y == mario.end.y)) {
+    if (mario.timeOut || mario.hasWin) {
       mario.div.removeChild(mario.canvas);
       mario.init();
       mario.div.appendChild(mario.canvas);
     }
-    
-    if(mario.count < 1) {
-      game();
-      mario.timing();
-      playBtn.style.display = "none";
-      document.getElementById("solutionBtn").style.display = "block";
 
-    }
+    game();
+    mario.timing();
+    playBtn.style.display = "none";
+    document.getElementById("solutionBtn").style.display = "block";
   };
 
   //show hint
   solutionBtn.onclick = () => {
     if (hasPlayed) {
+      solutionClick = true;
       hint = mario.find_path(
         mario.player.x,
         mario.player.y,
@@ -584,7 +608,7 @@ window.onload = () => {
       solutionBtn.style.display = "none";
     }
   };
-  
+
   //about
   aboutBtn.onclick = () => {
     alert(
@@ -598,19 +622,23 @@ window.onload = () => {
     );
   };
   window.addEventListener("keydown", (e) => {
-    switch (e.key) {
-      case "ArrowUp":
-        mario.moveUp();
-        break;
-      case "ArrowDown":
-        mario.moveDown();
-        break;
-      case "ArrowLeft":
-        mario.moveLeft();
-        break;
-      case "ArrowRight":
-        mario.moveRight();
-        break;
+    if (!(mario.hasWin || mario.timeOut)) {
+      switch (e.key) {
+        case "ArrowUp":
+          mario.moveUp();
+          break;
+        case "ArrowDown":
+          mario.moveDown();
+          break;
+        case "ArrowLeft":
+          mario.moveLeft();
+          break;
+        case "ArrowRight":
+          mario.moveRight();
+          break;
+        default:
+          break;
+      }
     }
   });
 };
