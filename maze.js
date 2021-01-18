@@ -553,7 +553,6 @@ Set.prototype.getByIndex = function (index) {
 const mario = new Mario();
 function game() {
   let hint = null;
-  do {
     mario.createGrid();
     mario.createMaze();
     hint = mario.find_path(
@@ -562,7 +561,6 @@ function game() {
       mario.end.x,
       mario.end.y
     );
-  } while (hint === 0);
   mario.finishMaze();
   mario.play();
 }
