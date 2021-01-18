@@ -59,7 +59,7 @@ class Mario {
     this.canvas.height = 900;
     this.ctx = this.canvas.getContext("2d");
     this.div.appendChild(this.canvas);
-    this.bgAu.volume = 0.2;
+    this.bgAu.volume = 0.1;
     this.bgAu.play();
   }
 
@@ -67,7 +67,7 @@ class Mario {
     this.interval = setInterval(() => {
       this.time--;
       if (this.time == 0) {
-        this.loseAu.volume = 0.2;
+        this.loseAu.volume = 0.1;
         this.bgAu.pause();
         this.loseAu.play();
         this.timeOut = true;
@@ -86,7 +86,7 @@ class Mario {
   checkWin() {
     if (this.player.x == this.end.x && this.player.y == this.end.y) {
       this.bgAu.pause();
-      this.winAu.volume = 0.2;
+      this.winAu.volume = 0.1;
       this.winAu.play();
       this.hasWin = true;
       cancelAnimationFrame(this.rq);
@@ -302,6 +302,8 @@ class Mario {
       }
       walls.splice(wallIndex, 1);
     }
+
+    this.moreWay();
   }
 
   finishMaze() {
@@ -446,7 +448,7 @@ class Mario {
         let cell_left = { x: center.x - 1, y: center.y };
         let cell_right = { x: center.x + 1, y: center.y };
         if (this.inbound(cell_top)) {
-          if (mario.grid[cell_top.x][cell_top.y])
+          if (this.grid[cell_top.x][cell_top.y])
             if (
               path[cell_top.x + cell_top.y * this.size].weight == -1 ||
               path[cell_top.x + cell_top.y * this.size].weight >
@@ -551,6 +553,7 @@ Set.prototype.getByIndex = function (index) {
 const mario = new Mario();
 function game() {
   let hint = null;
+  do {
     mario.createGrid();
     mario.createMaze();
     hint = mario.find_path(
@@ -559,6 +562,7 @@ function game() {
       mario.end.x,
       mario.end.y
     );
+  } while (hint === 0);
   mario.finishMaze();
   mario.play();
 }
