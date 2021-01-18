@@ -302,8 +302,6 @@ class Mario {
       }
       walls.splice(wallIndex, 1);
     }
-
-    this.moreWay();
   }
 
   finishMaze() {
