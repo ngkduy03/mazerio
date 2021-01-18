@@ -59,7 +59,7 @@ class Mario {
     this.canvas.height = 900;
     this.ctx = this.canvas.getContext("2d");
     this.div.appendChild(this.canvas);
-    this.bgAu.volume = 0.1;
+    this.bgAu.volume = 0.2;
     this.bgAu.play();
   }
 
@@ -67,7 +67,7 @@ class Mario {
     this.interval = setInterval(() => {
       this.time--;
       if (this.time == 0) {
-        this.loseAu.volume = 0.1;
+        this.loseAu.volume = 0.2;
         this.bgAu.pause();
         this.loseAu.play();
         this.timeOut = true;
@@ -86,7 +86,7 @@ class Mario {
   checkWin() {
     if (this.player.x == this.end.x && this.player.y == this.end.y) {
       this.bgAu.pause();
-      this.winAu.volume = 0.1;
+      this.winAu.volume = 0.2;
       this.winAu.play();
       this.hasWin = true;
       cancelAnimationFrame(this.rq);
